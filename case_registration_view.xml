@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+    	
+            
+            <record model="ir.ui.view" id="case_registration_tree_view">
+                <field name="name">case registration</field>
+                <field name="model">case.registration</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Case registration" version="7.0" colors="red:state == 'dismissed';blue:state == 'filed';black:state == 'proceeding';green:state == 'closed'">
+                        <field name="case_no"/>
+                        <field name="case_type"/>
+                        <field name="case_year"/>
+                        <field name="section_id"/>
+                        <field name="wakf_reg_no"/>
+                        <field name="wakf_district"/>
+                        <field name="condition_id"/>
+                        <field name="state"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="case_registration_form_view">
+                <field name="name">case registration</field>
+                <field name="model">case.registration</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Case Registration" version="7.0">
+                    	<header>
+	                    	<button name="action_dismiss" states="filed" string="Dismiss" type="object" icon="gtk-go-forward"/>
+	                		<button name="action_close" states="proceeding" string="Close" type="object" icon="gtk-go-forward"/>
+	                		<field name="state" widget="statusbar" statusbar_visible="filed,proceeding,closed,dismissed"/>
+                    	</header>
+                    	<sheet>
+                    		<group>
+                    			<group>
+                        			<field name="case_no" select="1"/>
+                        			<field name="case_type" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+			                        <field name="case_year"/>
+			                    </group>
+			                    <group>
+			                        <field name="section_id" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+			                        <field name="assess_year" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+			                        <field name="condition_id" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+                    			</group>
+                    			<group>
+                    				<field name="wakf_reg_no" on_change="on_change_wakf_regno_to_name(wakf_reg_no)"/>
+                    				<field name="wakf_name" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+                    				<field name="wakf_district" options="{'limit': 25, 'create': false, 'create_edit': false}"/>
+                    				<field name="wakf_taluk"/>
+                    				<field name="wakf_village"/>
+                    			</group>
+                    			<group>
+                    				<field name="wakf_address"/>
+                    				<field name="board_meeting_date"/>
+                    				<field name="delay_calender"/>
+                    			</group>
+                    			<group string="Dispose Details" attrs="{'invisible':[('state','not in',('filed','dismissed','proceeding','closed'))]}">
+                    				<field name="dispose"/>
+                    				<field name="number"/>
+                    			</group>
+                    		</group> 
+                    		<notebook colspan="4">
+	                        <page string="Petitioner Details">
+	                        	<field name="id_petitioner" nolabel="1" widget="one2many_list">
+								 	 <tree string="Petitioner Lines" editable="bottom">
+										<field name="name"/>		
+										<field name="petitioner_address"/>
+										<field name="advocate_name" on_change="on_change_advocate_to_address(advocate_name)"/>
+										<field name="advocate_address"/>
+									 </tree> 
+								</field>
+							</page>
+							<page string="Respondent Details">
+								<field name="id_respondent" nolabel="1" widget="one2many_list">
+								 	<tree string="Respondent Lines" editable="bottom">
+										<field name="name"/>		
+										<field name="respondent_address"/>
+										<field name="advocate_name" on_change="on_change_advocate_to_address(advocate_name)"/>
+										<field name="advocate_address"/>
+									</tree> 
+								</field>
+							</page>
+							<page string="Proceedings Details">
+								<field name="id_proceedings" nolabel="1"/>		
+							</page>
+							<page string="IA Details">
+								<field name="id_ia" nolabel="1"/>
+							</page>
+							</notebook>
+                    	</sheet>
+                    </form>
+                </field>
+            </record>
+            <!-- ================================================================================================== -->
+          	<!-- 									CALENDAR VIEW												    -->
+          	<!-- ================================================================================================== -->
+            <record id="view_litigation_line_calendar" model="ir.ui.view">
+	            <field name="name">Litigation Calendar</field>
+	            <field name="model">case.registration</field>
+	            <field name="type">calendar</field>
+	            <field name="arch" type="xml">
+	                <calendar string="Case Diary" color="case_type" date_start="board_meeting_date" date_delay="delay_calender">
+	                    <field name="case_type"/>
+	                </calendar>
+	            </field>
+ 			</record>
+ 			<!-- ================================================================================================== -->
+          	<!-- 									GRAPH VIEW													    -->
+          	<!-- ================================================================================================== -->
+ 			<record model="ir.ui.view" id="view_invoice_graph">
+			    <field name="name">Litigation Graph</field>
+			    <field name="model">case.registration</field>
+			    <field name="type">graph</field>
+			    <field name="arch" type="xml">
+			        <graph string="Case Graph" type="bar">
+			            <field name="case_type"/>
+			            <field name="case_year"/>
+			        </graph>
+			    </field>
+			</record>
+
+            <record model="ir.actions.act_window" id="action_case_registration_tree_view">
+                <field name="name">Case Registration</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">case.registration</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form,calendar,graph</field>
+                <field name="view_id" ref="case_registration_tree_view"/>
+            </record>
+           
+           <!-- ================================================================================================== -->
+           <!-- ========================================== SUB WIEWS ============================================= -->
+           <!-- ================================================================================================== -->
+            
+            
+            <record model="ir.ui.view" id="proceedings_details_tree_view">
+                <field name="name">Proceedings Details</field>
+                <field name="model">proceedings.details</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Proceedings Details" version="7.0">
+                        <field name="board_date"/>
+                        <field name="order_details"/>
+                        <field name="condition_id"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="proceedings_details_form_view">
+                <field name="name">Proceedings Details</field>
+                <field name="model">proceedings.details</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Proceedings Details" version="7.0">
+                    	<group>
+                        	<field name="board_date" select="1"/>
+                        	<field name="condition_id"/>
+	                        <field name="order_details"/>
+                    	</group>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_proceedings_details_tree_view">
+                <field name="name">Proceedings Details</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">proceedings.details</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="proceedings_details_tree_view"/>
+            </record>
+            
+  		   <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+           	
+            
+            <record model="ir.ui.view" id="idakkala_adalath_tree_view">
+                <field name="name">Idakkala Adalath</field>
+                <field name="model">idakkala.adalath</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Adalath" version="7.0">
+                        <field name="ia_no"/>
+                        <field name="ia_filed_on"/>
+                        <field name="ia_purpose"/>
+                        <field name="ia_by"/>
+                        <field name="condition_id1"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="idakkala_adalath_form_view">
+                <field name="name">Idakkala Adalath</field>
+                <field name="model">idakkala.adalath</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Adalath" version="7.0">
+                    	<sheet>
+                    		<group>
+                    			<group>
+                        			<field name="ia_no" select="1"/>
+                        			<field name="ia_filed_on"/>
+                        			<field name="ia_purpose"/>
+                    			</group>
+                    			<group>
+                    				<field name="ia_by"/>
+                        			<field name="condition_id1"/>
+                    			</group>
+                    		</group>
+                    		<notebook colspan="4">
+								<page string="Petitioner Details">
+		                        	<field name="petitioner_ia_id" nolabel="1" widget="one2many_list">
+									 	 <tree string="Petitioner Lines" editable="bottom">
+											<field name="name"/>		
+											<field name="petitioner_address"/>
+											<field name="advocate_name"/>
+											<field name="advocate_address"/>
+										 </tree> 
+									</field>
+								</page>
+								<page string="Respondent Details">
+									<field name="respondent_ia_id" nolabel="1" widget="one2many_list">
+									 	<tree string="Respondent Lines" editable="bottom">
+											<field name="name"/>		
+											<field name="respondent_address"/>
+											<field name="advocate_name"/>
+											<field name="advocate_address"/>
+										</tree> 
+									</field>
+								</page>
+								<page string="Proceedings Details">
+		                        	<field name="proceedings_ia_id" nolabel="1"/>
+								</page>
+							</notebook>
+                    	</sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_idakkala_adalath_tree_view">
+                <field name="name">Idakkala Adalath</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">idakkala.adalath</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="idakkala_adalath_tree_view"/>
+            </record>
+
+ 
+           <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+           	
+            
+            <record model="ir.ui.view" id="ia_proceedings_tree_view">
+                <field name="name">IA Proceedings</field>
+                <field name="model">ia.proceedings</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Proceedings" version="7.0">
+                        <field name="board_date"/>
+                        <field name="order_details"/>
+                        <field name="condition_id"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="ia_proceedings_form_view">
+                <field name="name">IA Proceedings</field>
+                <field name="model">ia.proceedings</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Proceedings" version="7.0">
+                    	<sheet>
+                    	<group>
+                    	<group>
+                        	<field name="board_date" select="1"/>
+                        	<field name="order_details"/>
+                        	<field name="condition_id"/>
+                    	</group>
+                    	</group>
+                    	</sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_ia_proceedings_tree_view">
+                <field name="name">IA Proceedings</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">ia.proceedings</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="ia_proceedings_tree_view"/>
+            </record>
+
+
+           
+           <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+            <record model="ir.ui.view" id="case_section_tree_view">
+                <field name="name">Case Section</field>
+                <field name="model">case.section</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Case Section" version="7.0">
+                        <field name="under_section"/>
+                        <field name="section_details"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="case_section_form_view">
+                <field name="name">Case Section</field>
+                <field name="model">case.section</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Case Section" version="7.0">
+                    <sheet><group>
+                        <field name="under_section" select="1"/>
+                        <field name="section_details"/>
+                    </group></sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_case_section_tree_view">
+                <field name="name">Case Section</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">case.section</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="case_section_tree_view"/>
+            </record>
+
+           <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+			
+            
+            <record model="ir.ui.view" id="present_condition_tree_view">
+                <field name="name">Present Condition</field>
+                <field name="model">present.condition</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Present Condition" version="7.0">
+                        <field name="name"/>
+                        <field name="condition_overview"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="present_condition_form_view">
+                <field name="name">Present Condition</field>
+                <field name="model">present.condition</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Present Condition" version="7.0">
+                    <sheet><group>
+                        <field name="name" select="1"/>
+                        <field name="condition_overview"/>
+                    </group></sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_present_condition_tree_view">
+                <field name="name">present condition</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">present.condition</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="present_condition_tree_view"/>
+            </record>
+		   
+		   <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+			
+            
+            <record model="ir.ui.view" id="advocate_master_tree_view">
+                <field name="name">Advocate Master</field>
+                <field name="model">advocate.master</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Advocate Master" version="7.0">
+                        <field name="name"/>
+                        <field name="address"/>
+                        <field name="mobile_no"/>
+                        <field name="office_no"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="advocate_master_form_view">
+                <field name="name">Advocate Master</field>
+                <field name="model">advocate.master</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="form_string" version="7.0">
+                    	<sheet>
+                    		<group>
+	                        <field name="name" select="1"/>
+	                        <field name="address"/>
+	                        </group>
+	                        <group>
+	                        <field name="mobile_no"/>
+	                        <field name="office_no"/>
+                    		</group>
+                    	</sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_advocate_master_tree_view">
+                <field name="name">Advocate Master</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">advocate.master</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="advocate_master_tree_view"/>
+            </record>
+
+		   <!-- ================================================================================================== -->
+           <!-- ================================================================================================== -->
+
+			
+            
+            <record model="ir.ui.view" id="ia_perpose_tree_view">
+                <field name="name">IA Purpose</field>
+                <field name="model">ia.purpose</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="IA Purpose" version="7.0">
+                        <field name="name"/>
+                        <field name="details"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="ia_perpose_form_view">
+                <field name="name">IA Purpose</field>
+                <field name="model">ia.purpose</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="IA Purpose" version="7.0">
+                    <sheet><group>
+                        <field name="name" select="1"/>
+                        <field name="details"/>
+                    </group></sheet>
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_ia_perpose_tree_view">
+                <field name="name">IA Purpose</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">ia.purpose</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="view_id" ref="ia_perpose_tree_view"/>
+            </record>
+            
+          <!-- ================================================================================================== -->
+          <!-- 									SEARCH VIEWS													  -->
+          <!-- ================================================================================================== -->
+          
+          	 <record id="case_registration_search_view" model="ir.ui.view">
+	            <field name="name">Case Registration search</field>
+	            <field name="model">case.registration</field>
+	            <field name="arch" type="xml">
+	                <search string="Search">
+		                <field name="case_no" string="Case No" filter_domain="[(('reg_no','=',self))]"/>
+		                <field name="wakf_reg_no" string="Wakf Register No" filter_domain="[(('wakf_reg_no','=',self))]"/>
+		                <field name="wakf_name" string="Wakf Name" filter_domain="[(('wakf_name','=',self))]"/>
+		                <separator/>
+		                <filter string="Assessment Appeals" name="open" domain="[('case_type','!=','aa')]" help="Open"/>
+		                <filter string="EP" name="open" domain="[('case_type','!=','ep')]" help="Open"/>
+		                <filter string="OP" name="open" domain="[('case_type','!=','op')]" help="Open"/>
+		                <filter string="Coveat" name="open" domain="[('case_type','!=','coveat')]" help="Open"/>
+		                <filter string="Miscellaneous" name="open" domain="[('case_type','!=','misc')]" help="Open"/>
+		                
+		                 <group expand="0" string="Group By...">
+		              		<filter string="Case Type" domain="[]" context="{'group_by':'case_type'}"/>
+		              		<filter string="Case Reg Date" domain="[]" context="{'group_by':'case_year'}"/>
+		              		<filter string="Under Section" domain="[]" context="{'group_by':'section_id'}"/>
+		              		<filter string="Present Condition" domain="[]" context="{'group_by':'condition_id'}"/>
+		              		<filter string="Wakf District" domain="[]" context="{'group_by':'wakf_district'}"/>
+		              		<filter string="Wakf Taluk" domain="[]" context="{'group_by':'wakf_taluk'}"/>
+		              		<filter string="Wakf Village" domain="[]" context="{'group_by':'wakf_village'}"/>
+		              		<filter string="Board Meeting Date" domain="[]" context="{'group_by':'board_meeting_date'}"/>
+		                 </group>
+	  				 </search>
+            	</field>
+        	</record>
+      
+
+			<menuitem id="litigation_main_menu" name="Litigation" parent=""/>
+			
+			<menuitem id="litigation_reg_menu" name="Case Registration" parent="litigation_main_menu"/>
+			<menuitem id="litigation_config_menu" name="Configuration" parent="litigation_main_menu"/>
+			
+			<menuitem id="ia_perpose_menu" name="IA Purpose" parent="litigation_config_menu" action="action_ia_perpose_tree_view"/>
+			<menuitem id="advocate_master_menu" name="Advocate Master" parent="litigation_config_menu" action="action_advocate_master_tree_view"/>
+			<menuitem id="present_condition_menu" name="Present Condition" parent="litigation_config_menu" action="action_present_condition_tree_view"/>
+			<menuitem id="case_section_menu" name="Case Section" parent="litigation_config_menu" action="action_case_section_tree_view"/>
+			<menuitem id="case_registration_menu" name="Case Registration" parent="litigation_reg_menu" action="action_case_registration_tree_view"/>
+
+    
+    </data>
+</openerp>
